@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static java.lang.String.valueOf;
 
@@ -15,37 +14,46 @@ public class Main {
     private static List<Integer> signs = List.of(32, 33, 44, 46, 39, 34, 58, 59, 63, 96, 45);
 
     public static void main(String[] args) throws IOException {
+        byte[] bytes = "280dc9e47f3352c307f6d894ee8d534313429a79c1d8a6021f8a8eabca919cfb685a0d468973625e757490daa981ea6b".getBytes();
         List<String> lines = Files.lines(Paths.get("data.txt")).collect(Collectors.toList());
 //        tryXorRowsBetween(lines);
 //        tryByGuessingPerRow(lines);
         HashMap<Integer, String> xored = getIndexOfLineWithXorValue(lines);
-        xored.values().forEach(System.out::println);
-        int length = lines.get(18).length();
+//        xored.values().forEach(System.out::println);
+        int length = lines.get(0).length();
         ArrayList<Integer> integers = getIntValuesOfPossibleChars();
 
         //show possible values
-//        analyze(lines, xored, length, integers);
+        analyze(lines, xored, length, integers);
 
 
+        xorWithNumberForFirstRow(xored, length,1 ,((int) 'W'));
+
+        print( xored, length, integers, 1);
     }
 
     private static void analyze(List<String> lines, HashMap<Integer, String> xored, int length, ArrayList<Integer> integers) {
-        for (int j = 27; j < lines.get(18).length(); j++) {
-            System.out.println(j + "!");
-            int finalJ = j;
-            integers.forEach(integer -> {
-                List<String> collect = xored.values().stream()
-                        .map(xor -> valueOf(getXor(length, integer, xor).charAt(finalJ)))
-                        .distinct()
-                        .filter(s -> ((int) s.charAt(0)) != integer)
-                        .collect(Collectors.toList());
-//                if (isContainsOnlyLettersAndSpace(collect)) {
-                    System.out.println(((char) integer.intValue()));
-                    System.out.println(collect);
-//                }
-            });
-            System.out.println();
+        for (int j = 50; j < lines.get(18).length(); j++) {
+            print(xored, length, integers, j);
         }
+    }
+
+    private static void print(HashMap<Integer, String> xored, int length, ArrayList<Integer> integers, int j) {
+        System.out.println(j + "!");
+        int finalJ = j;
+        integers.forEach(integer -> xorWithNumberForFirstRow(xored, length, finalJ, integer));
+        System.out.println();
+    }
+
+    private static void xorWithNumberForFirstRow(HashMap<Integer, String> xored, int length, int index, Integer integer) {
+        List<String> collect = xored.values().stream()
+                .filter(x -> x.length() > index)
+                .map(xor -> valueOf(getXor(length, integer, xor).charAt(index)))
+                .distinct()
+                .filter(s -> ((int) s.charAt(0)) != integer)
+                .collect(Collectors.toList());
+        System.out.println(((char) integer.intValue()));
+        System.out.println(collect);
     }
 
     private static ArrayList<Integer> getIntValuesOfPossibleChars() {
@@ -261,7 +269,7 @@ public class Main {
             List<String> collect = line.chars()
                     .mapToObj(i -> valueOf(((char) i)))
                     .collect(Collectors.toList());
-            for (int i = 0; i < key.length(); i++) {
+            for (int i = 0; i < line.length(); i++) {
                 System.out.print(xor(collect.get(i), valueOf(key.charAt(i))));
             }
             System.out.println();
