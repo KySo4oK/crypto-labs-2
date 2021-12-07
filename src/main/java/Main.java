@@ -1,4 +1,8 @@
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -14,7 +18,6 @@ public class Main {
     private static List<Integer> signs = List.of(32, 33, 44, 46, 39, 34, 58, 59, 63, 96, 45);
 
     public static void main(String[] args) throws IOException {
-        byte[] bytes = "280dc9e47f3352c307f6d894ee8d534313429a79c1d8a6021f8a8eabca919cfb685a0d468973625e757490daa981ea6b".getBytes();
         List<String> lines = Files.lines(Paths.get("data.txt")).collect(Collectors.toList());
 //        tryXorRowsBetween(lines);
 //        tryByGuessingPerRow(lines);
@@ -26,10 +29,37 @@ public class Main {
         //show possible values
         analyze(lines, xored, length, integers);
 
-
-        xorWithNumberForFirstRow(xored, length,1 ,((int) 'W'));
+        xorWithNumberForFirstRow(xored, length,1 ,((int) 'A'));
 
         print( xored, length, integers, 1);
+    }
+
+    private static int fromHex(char c) {
+        if (c >= '0' && c <= '9') {
+            return c - '0';
+        }
+        if (c >= 'A' && c <= 'F') {
+            return c - 'A' + 10;
+        }
+        if (c >= 'a' && c <= 'f') {
+            return c - 'a' + 10;
+        }
+        throw new IllegalArgumentException();
+    }
+
+    public static String xorHex(String a, String b) {
+        char[] chars = new char[a.length()];
+        for (int i = 0; i < chars.length; i++) {
+            chars[i] = toHex(fromHex(a.charAt(i)) ^ fromHex(b.charAt(i)));
+        }
+        return new String(chars);
+    }
+
+    private static char toHex(int nybble) {
+        if (nybble < 0 || nybble > 15) {
+            throw new IllegalArgumentException();
+        }
+        return "0123456789ABCDEF".charAt(nybble);
     }
 
     private static void analyze(List<String> lines, HashMap<Integer, String> xored, int length, ArrayList<Integer> integers) {
@@ -288,7 +318,7 @@ public class Main {
     }
 
     private static String getXorOfLines(List<String> lines, int i, int j) {
-        return xor(lines.get(i), lines.get(j));
+        return xorHex(lines.get(i), lines.get(j));
     }
 
     public static String xor(String a, String b) {
